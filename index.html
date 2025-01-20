@@ -7,39 +7,61 @@
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { display: block; }
+        button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
+    <button id="enter-vr">Enter VR</button>
     <script type="module">
         // Three.js importieren
         import * as THREE from './node_modules/three/build/three.module.js';
+        import { VRButton } from './node_modules/three/examples/jsm/webxr/VRButton.js';
 
         // Szene, Kamera und Renderer erstellen
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer();
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.xr.enabled = true; // WebXR aktivieren
         document.body.appendChild(renderer.domElement);
+
+        // WebXR-Button hinzufügen
+        document.body.appendChild(VRButton.createButton(renderer));
 
         // Würfel erstellen
         const geometry = new THREE.BoxGeometry();
-        const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
         const cube = new THREE.Mesh(geometry, material);
         scene.add(cube);
 
+        // Licht hinzufügen
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(1, 1, 1).normalize();
+        scene.add(light);
+
         // Kamera-Position
-        camera.position.z = 5;
+        camera.position.z = 2;
 
         // Animation
         function animate() {
-            requestAnimationFrame(animate);
-
             cube.rotation.x += 0.01;
             cube.rotation.y += 0.01;
 
             renderer.render(scene, camera);
         }
-        animate();
+        renderer.setAnimationLoop(animate);
     </script>
 </body>
 </html>
