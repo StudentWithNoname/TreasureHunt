@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Treasure Hunt</title>
+    <title>Treasure Hunt VR</title>
     <style>
         body {
             margin: 0;
@@ -16,21 +16,24 @@
         import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js';
         import { VRButton } from 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/webxr/VRButton.js';
 
-        // Basis-Setup
+        // Szene, Kamera und Renderer initialisieren
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.xr.enabled = true; // WebXR für den Renderer aktivieren
+        renderer.xr.enabled = true;
         document.body.appendChild(renderer.domElement);
 
         // VR-Button hinzufügen
         document.body.appendChild(VRButton.createButton(renderer));
 
         // Licht hinzufügen
-        const light = new THREE.PointLight(0xffffff, 1, 100);
-        light.position.set(10, 10, 10);
-        scene.add(light);
+        const ambientLight = new THREE.AmbientLight(0x404040); // Weiches Umgebungslicht
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+        pointLight.position.set(10, 10, 10);
+        scene.add(pointLight);
 
         // Boden hinzufügen
         const planeGeometry = new THREE.PlaneGeometry(20, 20);
@@ -40,13 +43,13 @@
         scene.add(plane);
 
         // Kamera-Position
-        camera.position.set(0, 2, 5);
+        camera.position.set(0, 1.6, 3); // Höhe entspricht etwa Augenhöhe im Stehen
 
-        // Würfel (zentraler Orientierungspunkt)
+        // Würfel hinzufügen
         const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
         const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
         const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-        cube.position.set(0, 0.5, 0); // Leicht über dem Boden
+        cube.position.set(0, 0.5, 0);
         scene.add(cube);
 
         // Schätze erstellen
@@ -56,12 +59,8 @@
             const treasureMaterial = new THREE.MeshStandardMaterial({ color: 0xffff00 });
             const treasure = new THREE.Mesh(treasureGeometry, treasureMaterial);
 
-            // Positioniere den Schatz an einem zufälligen Ort
-            treasure.position.set(
-                (Math.random() - 0.5) * 10, // Zufällige X-Koordinate
-                0.3,                         // Auf dem Boden
-                (Math.random() - 0.5) * 10  // Zufällige Z-Koordinate
-            );
+            // Zufällige Position für den Schatz
+            treasure.position.set((Math.random() - 0.5) * 10, 0.3, (Math.random() - 0.5) * 10);
 
             treasures.push(treasure);
             scene.add(treasure);
@@ -70,21 +69,17 @@
         // Animations-Schleife
         function animate() {
             renderer.setAnimationLoop(() => {
-                // Würfel rotieren lassen
                 cube.rotation.x += 0.01;
                 cube.rotation.y += 0.01;
 
-                // Überprüfen, ob ein Schatz eingesammelt wurde
+                // Sammeln der Schätze prüfen
                 treasures.forEach((treasure, index) => {
                     const distance = camera.position.distanceTo(treasure.position);
                     if (distance < 0.5) {
-                        // Schatz entfernen
                         scene.remove(treasure);
                         treasures.splice(index, 1);
-
-                        // Nachricht anzeigen
                         console.log("Schatz gefunden!");
-                        alert("Du hast einen Schatz gefunden!");
+                        // alert("Du hast einen Schatz gefunden!"); // Optionale Nachricht
                     }
                 });
 
