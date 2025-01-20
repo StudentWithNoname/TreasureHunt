@@ -5,48 +5,93 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Treasure Hunt</title>
     <style>
-        body { margin: 0; overflow: hidden; }
-        canvas { display: block; }
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body>
     <script type="module">
-        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.module.js';
-        import { VRButton } from 'https://cdn.jsdelivr.net/npm/three@0.153.0/examples/jsm/webxr/VRButton.js';
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js';
+        import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/controls/OrbitControls.js';
 
-        // Szene, Kamera und Renderer erstellen
+        // Szene, Kamera und Renderer
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.xr.enabled = true; // WebXR aktivieren
         document.body.appendChild(renderer.domElement);
 
-        // VR-Button hinzufügen
-        document.body.appendChild(VRButton.createButton(renderer));
+        // Licht
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(5, 5, 5);
+        scene.add(light);
 
-        // Würfel erstellen
+        // Würfel (zentraler Orientierungspunkt)
         const geometry = new THREE.BoxGeometry();
-        const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
         const cube = new THREE.Mesh(geometry, material);
         scene.add(cube);
 
-        // Licht hinzufügen
-        const light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(1, 1, 1).normalize();
-        scene.add(light);
-
         // Kamera-Position
-        camera.position.z = 2;
+        camera.position.z = 5;
 
-        // Animation
+        // Steuerung
+        const controls = new OrbitControls(camera, renderer.domElement);
+
+        // Schätze erstellen
+        const treasures = [];
+        for (let i = 0; i < 5; i++) {
+            const treasureGeometry = new THREE.SphereGeometry(0.2, 32, 32);
+            const treasureMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+            const treasure = new THREE.Mesh(treasureGeometry, treasureMaterial);
+
+            // Positionieren der Schätze an zufälligen Orten
+            treasure.position.set(
+                (Math.random() - 0.5) * 10, // X-Koordinate
+                (Math.random() - 0.5) * 10, // Y-Koordinate
+                (Math.random() - 0.5) * 10  // Z-Koordinate
+            );
+
+            treasures.push(treasure);
+            scene.add(treasure);
+        }
+
+        // Animations-Schleife
         function animate() {
+            requestAnimationFrame(animate);
+
+            // Würfel rotieren lassen
             cube.rotation.x += 0.01;
             cube.rotation.y += 0.01;
 
+            // Überprüfen, ob ein Schatz eingesammelt wurde
+            treasures.forEach((treasure, index) => {
+                const distance = camera.position.distanceTo(treasure.position);
+                if (distance < 0.5) {
+                    // Schatz wurde gefunden
+                    scene.remove(treasure); // Schatz aus der Szene entfernen
+                    treasures.splice(index, 1); // Schatz aus der Liste entfernen
+
+                    // Feedback geben
+                    console.log("Schatz gefunden!");
+                    alert("Du hast einen Schatz gefunden!");
+                }
+            });
+
+            controls.update();
             renderer.render(scene, camera);
         }
-        renderer.setAnimationLoop(animate);
+
+        animate();
+
+        // Fenstergröße anpassen
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
     </script>
 </body>
 </html>
