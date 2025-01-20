@@ -19,7 +19,6 @@
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.xr.enabled = true;
-        
         document.body.appendChild(renderer.domElement);
         document.body.appendChild(VRButton.createButton(renderer));
 
@@ -50,13 +49,11 @@
             const treasureMaterial = new THREE.MeshStandardMaterial({ color: 0xffff00 });
             const treasure = new THREE.Mesh(treasureGeometry, treasureMaterial);
             treasure.position.set((Math.random() - 0.5) * 10, 0.3, (Math.random() - 0.5) * 10);
+            treasure.isTreasure = true;
             treasures.push(treasure);
             scene.add(treasure);
         }
-        
-        let score = 0;
 
-        // VR-Controller hinzufügen
         const controller1 = renderer.xr.getController(0);
         controller1.addEventListener('selectstart', onSelectStart);
         scene.add(controller1);
@@ -85,12 +82,11 @@
                 if (intersectedObject.isTreasure) {
                     scene.remove(intersectedObject);
                     treasures.splice(treasures.indexOf(intersectedObject), 1);
-                    score++;
-                    console.log(`Schatz eingesammelt! Gesamtschatz: ${score}`);
+                    console.log("Schatz eingesammelt!");
                 }
             }
         }
-        
+
         function getIntersections(controller) {
             tempMatrix.identity().extractRotation(controller.matrixWorld);
             raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
