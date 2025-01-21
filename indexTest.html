@@ -13,7 +13,6 @@
         import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js';
         import { VRButton } from 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/webxr/VRButton.js';
 
-        // Szene, Kamera und Renderer initialisieren
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -21,10 +20,8 @@
         renderer.xr.enabled = true;
         document.body.appendChild(renderer.domElement);
 
-        // VR-Button hinzufügen
         document.body.appendChild(VRButton.createButton(renderer));
 
-        // Licht hinzufügen
         const ambientLight = new THREE.AmbientLight(0x404040); 
         scene.add(ambientLight);
 
@@ -32,17 +29,14 @@
         pointLight.position.set(10, 10, 10);
         scene.add(pointLight);
 
-        // Boden hinzufügen
         const planeGeometry = new THREE.PlaneGeometry(20, 20);
         const planeMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
         const plane = new THREE.Mesh(planeGeometry, planeMaterial);
         plane.rotation.x = -Math.PI / 2;
         scene.add(plane);
 
-        // Kamera-Position
         camera.position.set(0, 1.6, 3);
 
-        // Würfel hinzufügen
         const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
         const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
         const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
@@ -92,10 +86,33 @@
         controller2.addEventListener('selectstart', onSelectStart);
         scene.add(controller2);
 
+        function handleController(controller) {
+            // Assuming the primary thumbstick controls forward/backward, left/right movement
+            const session = renderer.xr.getSession();
+            if (!session) return;
+
+            const inputSources = session.inputSources;
+            for (const inputSource of inputSources) {
+                if (inputSource.gamepad) {
+                    const axes = inputSource.gamepad.axes;
+                    const speed = 0.05; // Adjust speed as needed
+
+                    // Use the axes to move the camera
+                    camera.position.x -= axes[2] * speed;
+                    camera.position.z -= axes[3] * speed;
+                }
+            }
+        }
+
         function animate() {
             renderer.setAnimationLoop(() => {
                 cube.rotation.x += 0.01;
                 cube.rotation.y += 0.01;
+
+                // Handle movement
+                handleController(controller1);
+                handleController(controller2);
+
                 renderer.render(scene, camera);
             });
         }
