@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,16 +11,14 @@
             background-color: #000;
             color: white;
         }
-
-        #log,
-        #overlay {
+        #log, #overlay {
             position: absolute;
             padding: 5px;
             background-color: rgba(0, 0, 0, 0.7);
             border-radius: 5px;
             font-size: 14px;
+            color: white;
         }
-
         #log {
             bottom: 0;
             width: 100%;
@@ -29,14 +26,12 @@
             overflow-y: auto;
             box-sizing: border-box;
         }
-
         #overlay {
             top: 10px;
             left: 10px;
         }
     </style>
 </head>
-
 <body>
     <div id="overlay"></div>
     <div id="log"></div>
@@ -72,7 +67,7 @@
             scene.add(treasure);
         }
 
-        // Kamera-Rig einrichten
+        // Kamera-Rig hinzufügen
         const rig = new THREE.Group();
         rig.add(camera);
         scene.add(rig);
@@ -95,10 +90,8 @@
 
         // Schatz einsammeln
         function collectTreasures() {
-            const playerPosition = rig.position;
             treasures.forEach((treasure, index) => {
-                const distance = playerPosition.distanceTo(treasure.position);
-                if (distance < 0.3) {
+                if (rig.position.distanceTo(treasure.position) < 0.5) { // Nähe überprüfen
                     scene.remove(treasure);
                     treasures.splice(index, 1);
                     showOverlayMessage('Schatz eingesammelt!');
@@ -146,29 +139,22 @@
                 const gamepad = inputSource.gamepad;
                 const speed = 0.15;
 
-                const moveDirection = new THREE.Vector3();
-                camera.getWorldDirection(moveDirection);
+                const direction = new THREE.Vector3();
+                camera.getWorldDirection(direction);
+                direction.y = 0;
+                direction.normalize();
 
-                if (Math.abs(gamepad.axes[2]) > 0.1) {
-                    const perpendicular = new THREE.Vector3().crossVectors(moveDirection, camera.up).normalize();
-                    perpendicular.multiplyScalar(gamepad.axes[2] * speed);
-                    rig.position.add(perpendicular);
-                }
-                if (Math.abs(gamepad.axes[3]) > 0.1) {
-                    const forwardBackward = moveDirection.clone().setY(0).normalize();
-                    forwardBackward.multiplyScalar(-gamepad.axes[3] * speed);
-                    rig.position.add(forwardBackward);
-                }
+                const sideways = new THREE.Vector3().crossVectors(camera.up, direction).normalize();
 
-                if (gamepad.axes[0] !== undefined) {
-                    rig.rotation.y -= gamepad.axes[0] * 0.05;
-                }
-                if (gamepad.axes[1] !== undefined) {
-                    camera.rotation.x -= gamepad.axes[1] * 0.025;
-                }
+                rig.position.add(direction.multiplyScalar(-gamepad.axes[3] * speed)); // Vorwärts/Rückwärts
+                rig.position.add(sideways.multiplyScalar(gamepad.axes[2] * speed)); // Links/Rechts
 
+                // Rechter Stick fürs Umschauen entsprechend der beschriebenen Spielweise
+                rig.rotation.y -= gamepad.axes[0] * 0.05;
+                camera.rotation.x -= gamepad.axes[1] * 0.025;
+        
                 customLog(`Rig Position X: ${rig.position.x.toFixed(2)}, Z: ${rig.position.z.toFixed(2)}`);
-                customLog(`Rig Rotation Y: ${rig.rotation.y.toFixed(2)}`);
+                customLog(`Rig Drehung Y: ${rig.rotation.y.toFixed(2)}`);
             });
         }
 
@@ -179,7 +165,7 @@
             renderer.render(scene, camera);
         });
 
-        // Fenstergröße anpassen
+        // Fenstergrößenänderung behandeln
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
@@ -187,5 +173,4 @@
         });
     </script>
 </body>
-
 </html>
