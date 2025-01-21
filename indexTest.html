@@ -86,33 +86,28 @@
         controller2.addEventListener('selectstart', onSelectStart);
         scene.add(controller2);
 
-        function handleController(controller) {
-            // Assuming the primary thumbstick controls forward/backward, left/right movement
+        function handleControllerMovement(controller) {
             const session = renderer.xr.getSession();
             if (!session) return;
 
-            const inputSources = session.inputSources;
-            for (const inputSource of inputSources) {
-                if (inputSource.gamepad) {
-                    const axes = inputSource.gamepad.axes;
-                    const speed = 0.05; // Adjust speed as needed
-
-                    // Use the axes to move the camera
-                    camera.position.x -= axes[2] * speed;
-                    camera.position.z -= axes[3] * speed;
-                }
+            const gamepad = controller.gamepad;
+            if (gamepad) {
+                const speed = 0.1;
+                // Use the gamepad axes to adjust the camera's position
+                const deltaX = gamepad.axes[2] * speed;
+                const deltaZ = gamepad.axes[3] * speed;
+                camera.position.x += deltaX;
+                camera.position.z += deltaZ;
             }
         }
 
         function animate() {
             renderer.setAnimationLoop(() => {
+                handleControllerMovement(controller1);
+                handleControllerMovement(controller2);
+
                 cube.rotation.x += 0.01;
                 cube.rotation.y += 0.01;
-
-                // Handle movement
-                handleController(controller1);
-                handleController(controller2);
-
                 renderer.render(scene, camera);
             });
         }
@@ -124,7 +119,6 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-
     </script>
 </body>
 </html>
