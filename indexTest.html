@@ -107,9 +107,9 @@
 
                     customLog(`Gamepad ID: ${gamepad.id}`);
 
-                    gamepad.axes.forEach((value, index) => {
-                        customLog(`Achse ${index}: ${value.toFixed(2)}`);
-                    });
+                    for (let i = 0; i < gamepad.axes.length; i++) {
+                        customLog(`Achse ${i}: ${gamepad.axes[i]}`);
+                    }
 
                     const speed = 0.15;
                     const deltaX = gamepad.axes[2] * speed;
