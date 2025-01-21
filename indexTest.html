@@ -32,6 +32,7 @@
         import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js';
         import { VRButton } from 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/webxr/VRButton.js';
 
+        // Szene, Kamera und Renderer einrichten
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -41,7 +42,7 @@
 
         document.body.appendChild(VRButton.createButton(renderer));
 
-        // Licht hinzufügen
+        // Licht einrichten
         const ambientLight = new THREE.AmbientLight(0x404040);
         scene.add(ambientLight);
 
@@ -56,12 +57,12 @@
         plane.rotation.x = -Math.PI / 2;
         scene.add(plane);
 
-        // Kamera in ein Rig packen
+        // Kamera und Rig erstellen
         const rig = new THREE.Group();
         rig.add(camera);
         scene.add(rig);
 
-        // Schätze platzieren
+        // Schätze erstellen
         const treasures = [];
         for (let i = 0; i < 5; i++) {
             const treasureGeometry = new THREE.SphereGeometry(0.3, 32, 32);
@@ -72,7 +73,7 @@
             scene.add(treasure);
         }
 
-        // Controller-Handling
+        // Controller erstellen
         const raycaster = new THREE.Raycaster();
         const tempMatrix = new THREE.Matrix4();
 
@@ -97,38 +98,43 @@
 
         const controller1 = renderer.xr.getController(0);
         controller1.addEventListener('selectstart', onSelectStart);
-
-        const controllerGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.1, 8);
-        const controllerMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        const controllerMesh1 = new THREE.Mesh(controllerGeometry, controllerMaterial);
-        controller1.add(controllerMesh1);
         scene.add(controller1);
 
         const controller2 = renderer.xr.getController(1);
         controller2.addEventListener('selectstart', onSelectStart);
-        const controllerMesh2 = new THREE.Mesh(controllerGeometry, controllerMaterial);
-        controller2.add(controllerMesh2);
         scene.add(controller2);
 
-        // Bewegung basierend auf Controllern
+        // Controller sichtbar machen
+        const controllerGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.1, 8);
+        const controllerMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const controllerMesh1 = new THREE.Mesh(controllerGeometry, controllerMaterial);
+        controller1.add(controllerMesh1);
+
+        const controllerMesh2 = new THREE.Mesh(controllerGeometry, controllerMaterial);
+        controller2.add(controllerMesh2);
+
+        // Bewegung basierend auf Gamepad-Achsen
         function handleControllerMovement() {
             const session = renderer.xr.getSession();
             if (!session) return;
 
             session.inputSources.forEach((inputSource) => {
                 if (!inputSource.gamepad) return;
+
                 const gamepad = inputSource.gamepad;
-                const speed = 0.1;
+                const speed = 0.05; // Bewegungsgeschwindigkeit
 
-                customLog(`Gamepad ID: ${gamepad.id}`);
-
-                const deltaX = gamepad.axes[0] * speed;
-                const deltaZ = gamepad.axes[1] * speed;
-                rig.position.x += deltaX;
-                rig.position.z += deltaZ;
+                // Nur wenn die Controller-Trigger gedrückt werden, Bewegung aktivieren
+                if (gamepad.buttons[3]?.pressed) { // 3 ist typischerweise der Trigger-Button
+                    const deltaX = gamepad.axes[2] * speed; // Links/Rechts
+                    const deltaZ = gamepad.axes[3] * speed; // Vorwärts/Rückwärts
+                    rig.position.x += deltaX;
+                    rig.position.z += deltaZ;
+                }
             });
         }
 
+        // Animation
         function animate() {
             renderer.setAnimationLoop(() => {
                 handleControllerMovement();
