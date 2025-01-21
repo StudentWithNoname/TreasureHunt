@@ -12,31 +12,37 @@
     <script type="module">
         import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js';
         import { VRButton } from 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/webxr/VRButton.js';
-        import { XRControllerModelFactory } from 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/webxr/XRControllerModelFactory.js';
 
+        // Szene, Kamera und Renderer initialisieren
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.xr.enabled = true;
         document.body.appendChild(renderer.domElement);
+
+        // VR-Button hinzufügen
         document.body.appendChild(VRButton.createButton(renderer));
 
-        const ambientLight = new THREE.AmbientLight(0x404040);
+        // Licht hinzufügen
+        const ambientLight = new THREE.AmbientLight(0x404040); 
         scene.add(ambientLight);
 
         const pointLight = new THREE.PointLight(0xffffff, 1, 100);
         pointLight.position.set(10, 10, 10);
         scene.add(pointLight);
 
+        // Boden hinzufügen
         const planeGeometry = new THREE.PlaneGeometry(20, 20);
         const planeMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
         const plane = new THREE.Mesh(planeGeometry, planeMaterial);
         plane.rotation.x = -Math.PI / 2;
         scene.add(plane);
 
+        // Kamera-Position
         camera.position.set(0, 1.6, 3);
 
+        // Würfel hinzufügen
         const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
         const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
         const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
@@ -53,23 +59,6 @@
             treasures.push(treasure);
             scene.add(treasure);
         }
-
-        const controller1 = renderer.xr.getController(0);
-        controller1.addEventListener('selectstart', onSelectStart);
-        scene.add(controller1);
-
-        const controller2 = renderer.xr.getController(1);
-        controller2.addEventListener('selectstart', onSelectStart);
-        scene.add(controller2);
-
-        const controllerModelFactory = new XRControllerModelFactory();
-        const controllerGrip1 = renderer.xr.getControllerGrip(0);
-        controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
-        scene.add(controllerGrip1);
-
-        const controllerGrip2 = renderer.xr.getControllerGrip(1);
-        controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
-        scene.add(controllerGrip2);
 
         const raycaster = new THREE.Raycaster();
         const tempMatrix = new THREE.Matrix4();
@@ -93,6 +82,15 @@
             raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
             return raycaster.intersectObjects(treasures);
         }
+
+        // VR-Controller erstellen
+        const controller1 = renderer.xr.getController(0);
+        controller1.addEventListener('selectstart', onSelectStart);
+        scene.add(controller1);
+
+        const controller2 = renderer.xr.getController(1);
+        controller2.addEventListener('selectstart', onSelectStart);
+        scene.add(controller2);
 
         function animate() {
             renderer.setAnimationLoop(() => {
