@@ -37,12 +37,6 @@
 
         camera.position.set(0, 1.6, 3);
 
-        const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
-        const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-        const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-        cube.position.set(0, 0.5, 0);
-        scene.add(cube);
-
         const treasures = [];
         for (let i = 0; i < 5; i++) {
             const treasureGeometry = new THREE.SphereGeometry(0.3, 32, 32);
@@ -93,14 +87,14 @@
                 if (source && source.gamepad) {
                     const gamepad = source.gamepad;
                     const speed = 0.05;
-
-                    // Ensure correct axes are used
                     const deltaX = gamepad.axes[2] * speed;
                     const deltaZ = gamepad.axes[3] * speed;
 
-                    // Apply movements based on thumbstick inputs
-                    camera.position.x += deltaX;
-                    camera.position.z += deltaZ;
+                    camera.position.set(
+                        camera.position.x + deltaX,
+                        camera.position.y,
+                        camera.position.z + deltaZ
+                    );
                 }
             }
         }
@@ -108,9 +102,6 @@
         function animate() {
             renderer.setAnimationLoop(() => {
                 handleControllerMovement();
-
-                cube.rotation.x += 0.01;
-                cube.rotation.y += 0.01;
                 renderer.render(scene, camera);
             });
         }
