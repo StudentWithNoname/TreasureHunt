@@ -114,7 +114,7 @@
             });
         }
 
-        // Controller für Raycasting
+        // Raycasting für Trigger
         const raycaster = new THREE.Raycaster();
         const tempMatrix = new THREE.Matrix4();
 
@@ -142,7 +142,7 @@
         controller2.addEventListener('selectstart', onSelectStart);
         scene.add(controller2);
 
-        // Bewegung und Rotation steuern
+        // Ego-Shooter-Steuerung (rechter und linker Stick)
         function handleMovementAndRotation() {
             const session = renderer.xr.getSession();
             if (!session) return;
@@ -152,6 +152,7 @@
 
                 const gamepad = inputSource.gamepad;
                 const speed = 0.05;
+                const rotationSpeed = 0.03;
 
                 if (index === 0) {
                     // Linker Stick: Bewegung
@@ -159,8 +160,7 @@
                     rig.position.z += gamepad.axes[1] * speed; // Vorwärts/Rückwärts
                 } else if (index === 1) {
                     // Rechter Stick: Rotation
-                    rig.rotation.y -= gamepad.axes[2] * 0.05; // Links/Rechts
-                    camera.rotation.x -= gamepad.axes[3] * 0.05; // Oben/Unten
+                    rig.rotation.y -= gamepad.axes[2] * rotationSpeed; // Links/Rechts
                 }
             });
         }
