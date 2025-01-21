@@ -57,7 +57,6 @@
         camera.position.set(0, 1.6, 3);
 
         const treasures = [];
-
         for (let i = 0; i < 5; i++) {
             const treasureGeometry = new THREE.SphereGeometry(0.3, 32, 32);
             const treasureMaterial = new THREE.MeshStandardMaterial({ color: 0xffff00 });
@@ -74,10 +73,10 @@
             const controller = event.target;
             const intersections = getIntersections(controller);
             if (intersections.length > 0) {
-                const intersectedObject = intersections[0].object;
-                if (intersectedObject) {
-                    scene.remove(intersectedObject);
-                    console.log("Schatz eingesammelt!");
+                const intersect = intersections[0];
+                if (intersect.object) {
+                    scene.remove(intersect.object);
+                    customLog('Schatz eingesammelt!');
                 }
             }
         }
@@ -101,24 +100,22 @@
             const session = renderer.xr.getSession();
             if (!session) return;
 
-            for (const source of session.inputSources) {
-                if (source && source.gamepad) {
-                    const gamepad = source.gamepad;
+            session.inputSources.forEach((inputSource) => {
+                if (!inputSource.gamepad) return;
+                const gamepad = inputSource.gamepad;
+                const speed = 0.1;
 
-                    customLog(`Gamepad ID: ${gamepad.id}`);
+                customLog(`Gamepad ID: ${gamepad.id}`);
 
-                    for (let i = 0; i < gamepad.axes.length; i++) {
-                        customLog(`Achse ${i}: ${gamepad.axes[i]}`);
-                    }
+                gamepad.axes.forEach((axis, index) => {
+                    customLog(`Achse ${index} Wert: ${axis.toFixed(2)}`);
+                });
 
-                    const speed = 0.15;
-                    const deltaX = gamepad.axes[2] * speed;
-                    const deltaZ = gamepad.axes[3] * speed;
-
-                    camera.position.x += deltaX;
-                    camera.position.z += deltaZ;
-                }
-            }
+                const deltaX = gamepad.axes[2] * speed;
+                const deltaZ = gamepad.axes[3] * speed;
+                camera.position.x += deltaX;
+                camera.position.z += deltaZ;
+            });
         }
 
         function animate() {
@@ -127,7 +124,6 @@
                 renderer.render(scene, camera);
             });
         }
-
         animate();
 
         window.addEventListener('resize', () => {
