@@ -57,12 +57,12 @@
         camera.position.set(0, 1.6, 3);
 
         const treasures = [];
+
         for (let i = 0; i < 5; i++) {
             const treasureGeometry = new THREE.SphereGeometry(0.3, 32, 32);
             const treasureMaterial = new THREE.MeshStandardMaterial({ color: 0xffff00 });
             const treasure = new THREE.Mesh(treasureGeometry, treasureMaterial);
             treasure.position.set((Math.random() - 0.5) * 10, 0.3, (Math.random() - 0.5) * 10);
-            treasure.isTreasure = true;
             treasures.push(treasure);
             scene.add(treasure);
         }
@@ -75,10 +75,9 @@
             const intersections = getIntersections(controller);
             if (intersections.length > 0) {
                 const intersectedObject = intersections[0].object;
-                if (intersectedObject.isTreasure) {
+                if (intersectedObject) {
                     scene.remove(intersectedObject);
-                    treasures.splice(treasures.indexOf(intersectedObject), 1);
-                    customLog("Schatz eingesammelt!");
+                    console.log("Schatz eingesammelt!");
                 }
             }
         }
@@ -105,8 +104,12 @@
             for (const source of session.inputSources) {
                 if (source && source.gamepad) {
                     const gamepad = source.gamepad;
-                    const axes = gamepad.axes.map(a => a.toFixed(2));
-                    customLog(`Achse0: ${axes[0]}, Achse1: ${axes[1]}, Achse2: ${axes[2]}, Achse3: ${axes[3]}`);
+
+                    customLog(`Gamepad ID: ${gamepad.id}`);
+
+                    gamepad.axes.forEach((value, index) => {
+                        customLog(`Achse ${index}: ${value.toFixed(2)}`);
+                    });
 
                     const speed = 0.15;
                     const deltaX = gamepad.axes[2] * speed;
