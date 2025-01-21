@@ -66,7 +66,7 @@
         ground.rotation.x = -Math.PI / 2;
         scene.add(ground);
 
-        // Schatz erstellen
+        // Schätze erstellen
         const treasures = [];
         for (let i = 0; i < 5; i++) {
             const treasure = new THREE.Mesh(
@@ -91,7 +91,7 @@
             const logMessage = document.createElement('div');
             logMessage.textContent = message;
             logElement.appendChild(logMessage);
-            logElement.scrollTop = logElement.scrollHeight; // Automatisch nach unten scrollen
+            logElement.scrollTop = logElement.scrollHeight;
         }
 
         function showOverlayMessage(message) {
@@ -99,7 +99,22 @@
             setTimeout(() => (overlayElement.textContent = ''), 3000);
         }
 
-        // Controller für Schätze
+        // Schatz einsammeln
+        function collectTreasures() {
+            const playerPosition = rig.position;
+
+            treasures.forEach((treasure, index) => {
+                const distance = playerPosition.distanceTo(treasure.position);
+                if (distance < 0.5) { // Nähe überprüfen
+                    scene.remove(treasure);
+                    treasures.splice(index, 1);
+                    showOverlayMessage('Schatz eingesammelt!');
+                    customLog('Schatz eingesammelt!');
+                }
+            });
+        }
+
+        // Controller für Raycasting
         const raycaster = new THREE.Raycaster();
         const tempMatrix = new THREE.Matrix4();
 
@@ -127,7 +142,7 @@
         controller2.addEventListener('selectstart', onSelectStart);
         scene.add(controller2);
 
-        // Bewegung und Blickrichtung steuern
+        // Bewegung und Rotation steuern
         function handleMovementAndRotation() {
             const session = renderer.xr.getSession();
             if (!session) return;
@@ -138,15 +153,14 @@
                 const gamepad = inputSource.gamepad;
                 const speed = 0.05;
 
-                if (index === 1) {
-                    // Rechter Stick: Bewegung
+                if (index === 0) {
+                    // Linker Stick: Bewegung
                     rig.position.x += gamepad.axes[2] * speed; // Links/Rechts
                     rig.position.z += gamepad.axes[3] * speed; // Vorwärts/Rückwärts
-                    customLog(`Rechte Steuerung: X=${gamepad.axes[2].toFixed(2)}, Z=${gamepad.axes[3].toFixed(2)}`);
-                } else if (index === 0) {
-                    // Linker Stick: Rotation
+                } else if (index === 1) {
+                    // Rechter Stick: Rotation
                     rig.rotation.y -= gamepad.axes[2] * 0.05; // Links/Rechts
-                    customLog(`Linke Steuerung: Rotation=${gamepad.axes[2].toFixed(2)}`);
+                    camera.rotation.x -= gamepad.axes[3] * 0.05; // Oben/Unten
                 }
             });
         }
@@ -154,6 +168,7 @@
         // Animation
         renderer.setAnimationLoop(() => {
             handleMovementAndRotation();
+            collectTreasures();
             renderer.render(scene, camera);
         });
 
