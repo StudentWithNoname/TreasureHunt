@@ -52,13 +52,13 @@
         document.body.appendChild(renderer.domElement);
         document.body.appendChild(VRButton.createButton(renderer));
 
-        // Licht hinzufügen
+        // Lighting
         scene.add(new THREE.AmbientLight(0x404040));
         const pointLight = new THREE.PointLight(0xffffff, 1, 100);
         pointLight.position.set(10, 10, 10);
         scene.add(pointLight);
 
-        // Boden hinzufügen
+        // Ground
         const ground = new THREE.Mesh(
             new THREE.PlaneGeometry(20, 20),
             new THREE.MeshStandardMaterial({ color: 0x228B22 })
@@ -66,7 +66,7 @@
         ground.rotation.x = -Math.PI / 2;
         scene.add(ground);
 
-        // Schätze erstellen
+        // Treasures
         const treasures = [];
         for (let i = 0; i < 5; i++) {
             const treasure = new THREE.Mesh(
@@ -78,12 +78,12 @@
             scene.add(treasure);
         }
 
-        // Kamera in ein Rig einfügen
+        // Rig to move the camera
         const rig = new THREE.Group();
         rig.add(camera);
         scene.add(rig);
 
-        // Logging-Funktionen
+        // Logging
         const logElement = document.getElementById('log');
         const overlayElement = document.getElementById('overlay');
 
@@ -99,7 +99,7 @@
             setTimeout(() => (overlayElement.textContent = ''), 3000);
         }
 
-        // Schatz einsammeln
+        // Collect treasures
         function collectTreasures() {
             const playerPosition = rig.position;
 
@@ -108,13 +108,13 @@
                 if (distance < 0.5) {
                     scene.remove(treasure);
                     treasures.splice(index, 1);
-                    showOverlayMessage('Schatz eingesammelt!');
-                    customLog('Schatz eingesammelt!');
+                    showOverlayMessage('Collected a treasure!');
+                    customLog('Collected a treasure!');
                 }
             });
         }
 
-        // Controller für Raycasting
+        // Raycasting with controllers
         const raycaster = new THREE.Raycaster();
         const tempMatrix = new THREE.Matrix4();
 
@@ -129,8 +129,8 @@
                 const treasure = intersections[0].object;
                 scene.remove(treasure);
                 treasures.splice(treasures.indexOf(treasure), 1);
-                showOverlayMessage('Schatz eingesammelt!');
-                customLog('Schatz eingesammelt!');
+                showOverlayMessage('Collected a treasure!');
+                customLog('Collected a treasure!');
             }
         }
 
@@ -142,41 +142,37 @@
         controller2.addEventListener('selectstart', onSelectStart);
         scene.add(controller2);
 
-        // Bewegung und Rotation steuern
+        // Movement and rotation handling
         function handleMovementAndRotation() {
             const session = renderer.xr.getSession();
             if (!session) return;
 
-            session.inputSources.forEach((inputSource, index) => {
+            session.inputSources.forEach(inputSource => {
                 if (!inputSource.gamepad) return;
 
                 const gamepad = inputSource.gamepad;
                 const speed = 0.05;
 
-                if (index === 0) {
-                    // Linker Stick: Bewegung
-                    rig.position.x += gamepad.axes[2] * speed; // Links/Rechts
-                    rig.position.z += gamepad.axes[3] * speed; // Vorwärts/Rückwärts
-                } else if (index === 1) {
-                    // Rechter Stick: Rotation
-                    rig.rotation.y -= gamepad.axes[2] * 0.05; // Links/Rechts
-                    camera.rotation.x -= gamepad.axes[3] * 0.05; // Oben/Unten
+                if (gamepad.axes[2] !== undefined && gamepad.axes[3] !== undefined) {
+                    // Assuming axes[2] and axes[3] for movement
+                    rig.position.x += gamepad.axes[2] * speed;
+                    rig.position.z += gamepad.axes[3] * speed;
                 }
-
-                // Debug Logs für Positions- und Rotationsänderungen
-                customLog(`Rig Position X: ${rig.position.x.toFixed(2)}, Z: ${rig.position.z.toFixed(2)}`);
-                customLog(`Rig Rotation Y: ${rig.rotation.y.toFixed(2)}`);
+                
+                // Debug logs for positions and rotations
+                customLog(`Rig Position - X: ${rig.position.x.toFixed(2)}, Z: ${rig.position.z.toFixed(2)}`);
+                customLog(`Rig Rotation - Y: ${rig.rotation.y.toFixed(2)}`);
             });
         }
 
-        // Animation
+        // Animation loop
         renderer.setAnimationLoop(() => {
             handleMovementAndRotation();
             collectTreasures();
             renderer.render(scene, camera);
         });
 
-        // Fenstergröße anpassen
+        // Resize handling
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
