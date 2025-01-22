@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treasure Hunt Scene</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+</head>
+<body>
+    <a-scene>
+        <!-- Kamera mit Steuerungen -->
+        <a-entity camera look-controls wasd-controls position="0 1.6 5"></a-entity>
+
+        <!-- Boden mit Textur -->
+        <a-plane src="grass.jpeg" rotation="-90 0 0" width="100" height="100" material="repeat: 50 50; repeat-wrapping"></a-plane>
+
+        <!-- Schatzkisten-Modelle -->
+        <a-entity gltf-model="url(treasure_chest.gltf)" scale="0.5 0.5 0.5" position="2 0 -3"></a-entity>
+        <a-entity gltf-model="url(treasure_chest.gltf)" scale="0.5 0.5 0.5" position="-3 0 -6"></a-entity>
+        <a-entity gltf-model="url(treasure_chest.gltf)" scale="0.5 0.5 0.5" position="0 0 -4"></a-entity>
+
+        <!-- Bäume als Dekoration -->
+        <a-entity gltf-model="url(tree.gltf)" scale="1 1 1" position="5 0 -5"></a-entity>
+        <a-entity gltf-model="url(tree.gltf)" scale="1 1 1" position="-5 0 -10"></a-entity>
+
+        <!-- Beleuchtung -->
+        <a-light type="ambient" color="#888"></a-light>
+        <a-light type="directional" intensity="0.5" position="1 1 0"></a-light>
+    </a-scene>
+</body>
+</html>
