@@ -50,11 +50,16 @@
 
         // HDRI-Hintergrund laden
         const rgbeLoader = new RGBELoader();
-        rgbeLoader.load('assets/textures/forest_hdr.hdr', (texture) => {
-            texture.mapping = THREE.EquirectangularReflectionMapping;
-            scene.environment = texture;
-            scene.background = texture;
-        });
+        rgbeLoader.load('assets/textures/forest_hdr.hdr', 
+            (texture) => {
+                texture.mapping = THREE.EquirectangularReflectionMapping;
+                scene.environment = texture;
+                scene.background = texture;
+                console.log('HDRI erfolgreich geladen');
+            },
+            undefined,
+            (err) => console.error('Fehler beim Laden des HDRI:', err)
+        );
 
         // Licht hinzufügen
         scene.add(new THREE.AmbientLight(0x404040));
@@ -64,7 +69,7 @@
 
         // Boden mit Textur
         const textureLoader = new THREE.TextureLoader();
-        const groundTexture = textureLoader.load('assets/textures/grass.jpg');
+        const groundTexture = textureLoader.load('assets/textures/grass.jpeg');
         groundTexture.wrapS = THREE.RepeatWrapping;
         groundTexture.wrapT = THREE.RepeatWrapping;
         groundTexture.repeat.set(25, 25);
@@ -80,23 +85,31 @@
         let treasuresLeft = 5;
 
         for (let i = 0; i < treasuresLeft; i++) {
-            gltfLoader.load('assets/models/treasure_chest.glb', (gltf) => {
-                const treasure = gltf.scene;
-                treasure.scale.set(0.5, 0.5, 0.5);
-                treasure.position.set((Math.random() - 0.5) * 20, 0.3, (Math.random() - 0.5) * 20);
-                treasures.push(treasure);
-                scene.add(treasure);
-            });
+            gltfLoader.load('assets/models/treasure_chest.gltf', 
+                (gltf) => {
+                    const treasure = gltf.scene;
+                    treasure.scale.set(0.5, 0.5, 0.5);
+                    treasure.position.set((Math.random() - 0.5) * 20, 0.3, (Math.random() - 0.5) * 20);
+                    treasures.push(treasure);
+                    scene.add(treasure);
+                },
+                undefined,
+                (err) => console.error('Fehler beim Laden des Schatzmodells:', err)
+            );
         }
 
-        // Dekorative Elemente (Bäume)
+        // Dekorative Bäume laden
         for (let i = 0; i < 20; i++) {
-            gltfLoader.load('assets/models/tree.glb', (gltf) => {
-                const tree = gltf.scene;
-                tree.scale.set(1, 1, 1);
-                tree.position.set((Math.random() - 0.5) * 50, 0, (Math.random() - 0.5) * 50);
-                scene.add(tree);
-            });
+            gltfLoader.load('assets/models/tree.gltf', 
+                (gltf) => {
+                    const tree = gltf.scene;
+                    tree.scale.set(1, 1, 1);
+                    tree.position.set((Math.random() - 0.5) * 50, 0, (Math.random() - 0.5) * 50);
+                    scene.add(tree);
+                },
+                undefined,
+                (err) => console.error('Fehler beim Laden des Baummodells:', err)
+            );
         }
 
         // Kamera-Rig hinzufügen
@@ -104,7 +117,7 @@
         rig.add(camera);
         scene.add(rig);
 
-        // Logging- und Overlay-System
+        // Logging und Overlay
         const logElement = document.getElementById('log');
         const overlayElement = document.getElementById('overlay');
 
@@ -120,10 +133,10 @@
             setTimeout(() => (overlayElement.textContent = ''), 2000);
         }
 
-        // Schatz einsammeln
+        // Schätze einsammeln
         function collectTreasures() {
             treasures.forEach((treasure, index) => {
-                if (rig.position.distanceTo(treasure.position) < 1.0) { // Nähe überprüfen
+                if (rig.position.distanceTo(treasure.position) < 1.0) {
                     scene.remove(treasure);
                     treasures.splice(index, 1);
                     showOverlayMessage('Schatz eingesammelt!');
@@ -150,8 +163,8 @@
 
                 const sideways = new THREE.Vector3().crossVectors(camera.up, direction).normalize();
 
-                rig.position.add(direction.multiplyScalar(-gamepad.axes[3] * speed)); // Vorwärts/Rückwärts
-                rig.position.add(sideways.multiplyScalar(gamepad.axes[2] * speed)); // Links/Rechts
+                rig.position.add(direction.multiplyScalar(-gamepad.axes[3] * speed));
+                rig.position.add(sideways.multiplyScalar(gamepad.axes[2] * speed));
 
                 rig.rotation.y -= gamepad.axes[0] * 0.05;
                 camera.rotation.x -= gamepad.axes[1] * 0.025;
